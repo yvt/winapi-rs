@@ -4,7 +4,7 @@
 // All files in the project carrying such notice may not be copied, modified, or distributed
 // except according to those terms.
 //! longhorn display driver model kernel mode thunk interfaces
-use shared::basetsd::UINT64;
+use shared::basetsd::{UINT32, UINT64};
 use shared::d3dukmdt::{
     D3DDDICB_SIGNALFLAGS, D3DDDI_ALLOCATIONLIST, D3DDDI_CREATECONTEXTFLAGS,
     D3DDDI_MAX_BROADCAST_CONTEXT, D3DDDI_MAX_OBJECT_SIGNALED, D3DDDI_MAX_OBJECT_WAITED_ON,
@@ -12,8 +12,8 @@ use shared::d3dukmdt::{
     D3DDDI_SYNCHRONIZATIONOBJECTINFO2, D3DDDI_VIDEO_PRESENT_SOURCE_ID, D3DGPU_VIRTUAL_ADDRESS,
     D3DKMT_HANDLE,
 };
-use shared::minwindef::{BOOL, UINT, ULONG};
-use shared::ntdef::{HANDLE, LUID, PCWSTR, VOID, WCHAR};
+use shared::minwindef::{BOOL, UCHAR, UINT, ULONG};
+use shared::ntdef::{HANDLE, LUID, PCWSTR, ULONGLONG, VOID, WCHAR};
 use shared::windef::HDC;
 STRUCT!{struct D3DKMT_CREATEDEVICEFLAGS {
     bitfield: UINT,
@@ -133,6 +133,12 @@ STRUCT!{struct D3DKMT_SIGNALSYNCHRONIZATIONOBJECT2 {
     BroadcastContext: [D3DKMT_HANDLE; D3DDDI_MAX_BROADCAST_CONTEXT],
     u: D3DKMT_SIGNALSYNCHRONIZATIONOBJECT2_u,
 }}
+//1512
+STRUCT!{struct D3DKMT_SEGMENTSIZEINFO {
+    DedicatedVideoMemorySize: ULONGLONG,
+    DedicatedSystemMemorySize: ULONGLONG,
+    SharedSystemMemorySize: ULONGLONG,
+}}
 //1617
 STRUCT!{struct D3DKMT_ADAPTERTYPE {
     Value: UINT,
@@ -151,7 +157,44 @@ BITFIELD!{D3DKMT_ADAPTERTYPE Value: UINT [
     Detachable set_Detachable[10..11],
     Reserved set_Reserved[11..32],
 ]}
-//1900
+//1852
+STRUCT!{struct D3DKMT_NODE_PERFDATA {
+    NodeOrdinal: UINT32,
+    PhysicalAdapterIndex: UINT32,
+    Frequency: ULONGLONG,
+    MaxFrequency: ULONGLONG,
+    MaxFrequencyOC: ULONGLONG,
+    Voltage: ULONG,
+    VoltageMax: ULONG,
+    VoltageMaxOC: ULONG,
+    MaxTransitionLatency: ULONGLONG,
+}}
+STRUCT!{struct D3DKMT_ADAPTER_PERFDATA {
+    PhysicalAdapterIndex: UINT32,
+    MemoryFrequency: ULONGLONG,
+    MaxMemoryFrequency: ULONGLONG,
+    MaxMemoryFrequencyOC: ULONGLONG,
+    MemoryBandwidth: ULONGLONG,
+    PCIEBandwidth: ULONGLONG,
+    FanRPM: ULONG,
+    Power: ULONG,
+    Temperature: ULONG,
+    PowerStateOverride: UCHAR,
+}}
+STRUCT!{struct D3DKMT_ADAPTER_PERFDATACAPS {
+    PhysicalAdapterIndex: UINT32,
+    MaxMemoryBandwidth: ULONGLONG,
+    MaxPCIEBandwidth: ULONGLONG,
+    MaxFanRPM: ULONG,
+    TemperatureMax: ULONG,
+    TemperatureWarning: ULONG,
+}}
+pub const DXGK_MAX_GPUVERSION_NAME_LENGTH: usize = 32;
+STRUCT!{struct D3DKMT_GPUVERSION {
+    PhysicalAdapterIndex: UINT32,
+    BiosVersion: [WCHAR; DXGK_MAX_GPUVERSION_NAME_LENGTH],
+    GpuArchitecture: [WCHAR; DXGK_MAX_GPUVERSION_NAME_LENGTH],
+}}
 ENUM!{enum KMTQUERYADAPTERINFOTYPE {
     KMTQAITYPE_UMDRIVERPRIVATE = 0,
     KMTQAITYPE_UMDRIVERNAME = 1,
